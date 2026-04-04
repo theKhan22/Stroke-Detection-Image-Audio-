@@ -101,11 +101,6 @@ If you use this code or build upon this work, please cite:
 }
 ```
 
----
-
-## License
-
-This project is published under a Creative Commons open access license. See [LICENSE](LICENSE) for details.
 
 ---
 
