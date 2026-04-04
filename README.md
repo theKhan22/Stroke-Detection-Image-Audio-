@@ -67,10 +67,10 @@ This forces the model to learn both unimodal and cross-modal representations, ma
 
 Both datasets are publicly available on Kaggle:
 
-| Modality | Dataset | Source | Size |
-|---|---|---|---|
-| Facial Images | [Stroke Facial Image Dataset](https://www.kaggle.com/datasets/thealif/stroke-facial-image-dataset) | Kaggle / Google Images | 1000 images (500 stroke, 500 non-stroke) → 2000 after augmentation |
-| Audio Recordings | [Dysarthria and Non-Dysarthria Speech Dataset](https://www.kaggle.com/datasets/poojag718/dysarthria-and-nondysarthria-speech-dataset) | TORGO Database | 1996 samples (dysarthric and control speakers) |
+| Modality | Dataset | Size |
+|---|---|---|
+| Facial Images | [Stroke Facial Image Dataset](https://www.kaggle.com/datasets/thealif/stroke-facial-image-dataset) | 1000 images (500 stroke, 500 non-stroke) → 2000 after augmentation |
+| Audio Recordings | [Dysarthria and Non-Dysarthria Speech Dataset](https://www.kaggle.com/datasets/poojag718/dysarthria-and-nondysarthria-speech-dataset) | 1996 samples (dysarthric and control speakers) |
 
 ### Audio Speaker Split (to prevent leakage)
 
@@ -83,118 +83,23 @@ Both datasets are publicly available on Kaggle:
 
 ---
 
-## Installation
-
-```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
-pip install -r requirements.txt
-```
-
-### Requirements
-
-```
-tensorflow>=2.10
-mediapipe
-librosa
-scikit-learn
-xgboost
-catboost
-lightgbm
-deepface
-pillow
-numpy
-pandas
-matplotlib
-seaborn
-hdbscan
-```
-
----
-
 ## Project Structure
 
 ```
 ├── data/
-│   ├── facial/               # Facial image dataset (download from Kaggle)
-│   └── audio/                # TORGO audio dataset (download from Kaggle)
+│   ├── stroke_facial_images/              # Facial image dataset (download from Kaggle)
+│   └── torgo_dysarthria_audio/            # TORGO audio dataset (download from Kaggle)
 ├── preprocessing/
-│   ├── facial_landmarks.py   # MediaPipe Face Mesh extraction & normalization
-│   └── mfcc_extraction.py    # MFCC feature extraction via librosa
+│   ├── extract_mediapipe_facial_landmarks.py   # MediaPipe Face Mesh extraction & nose-tip normalization
+│   └── extract_mfcc_from_speech.py             # Librosa MFCC extraction + mean pooling across frames
 ├── feature_selection/
-│   ├── facial_selection.py   # RF + XGBoost + CatBoost importance aggregation
-│   └── audio_selection.py    # CatBoost + LightGBM + ExtraTrees importance aggregation
+│   ├── rank_facial_landmark_regions.py         # RF + XGBoost + CatBoost region importance aggregation
+│   └── rank_mfcc_coefficients.py               # CatBoost + LightGBM + ExtraTrees coefficient ranking
 ├── models/
-│   └── cnn_gru.py            # CNN–GRU dual-branch architecture
+│   └── dual_branch_cnn_mlp_fusion.py           # Dual CNN branches with MLP fusion for stroke classification
 ├── training/
-│   ├── modality_masking.py   # Epoch-wise stochastic modality masking logic
-│   └── train.py              # Training loop
-├── evaluation/
-│   └── evaluate.py           # Evaluation across all three test cases
-├── robustness/
-│   ├── facial_corruption.py  # Brightness, noise, blur, JPEG, shadow tests
-│   └── audio_corruption.py   # Reverberation, filtering, babble noise tests
-├── notebooks/
-│   └── full_pipeline.ipynb   # End-to-end walkthrough notebook
-├── requirements.txt
-└── README.md
-```
-
----
-
-## Usage
-
-### 1. Preprocess Data
-
-```bash
-# Extract facial landmarks
-python preprocessing/facial_landmarks.py --input data/facial/ --output data/processed/
-
-# Extract MFCC features
-python preprocessing/mfcc_extraction.py --input data/audio/ --output data/processed/
-```
-
-### 2. Feature Selection
-
-```bash
-python feature_selection/facial_selection.py
-python feature_selection/audio_selection.py
-```
-
-This selects the top 116 facial landmarks and top 116 MFCC coefficients.
-
-### 3. Train the Model
-
-```bash
-python training/train.py --epochs 600 --lr 0.001 --gru_units 64 --conv_filters 32
-```
-
-### 4. Evaluate
-
-```bash
-# Test all three modality conditions
-python evaluation/evaluate.py --model_path checkpoints/best_model.h5
-```
-
-### 5. Robustness Testing
-
-```bash
-python robustness/facial_corruption.py
-python robustness/audio_corruption.py
-```
-
----
-
-## Explainability (XAI)
-
-Feature importance is computed by aggregating scores from three classifiers (Random Forest, XGBoost, CatBoost) over five randomized train–test splits. The top 10 diagnostically relevant facial regions identified are:
-
-- **Cheeks** (right + left, 38 landmarks) — captures unilateral facial drooping
-- **Lips** (upper/lower outer + inner, 44 landmarks) — reflects motor weakness and dysarthria
-- **Eyebrows** (right + left upper, 17 landmarks) — helps distinguish central vs. peripheral facial palsy
-- **Lower eyelids** (right + left, 18 landmarks) — additional motor nerve pathway indicators
-
-These regions align directly with the clinical **FAST (Face-Arm-Speech-Time)** stroke assessment protocol.
+│   ├── stochastic_modality_masking.py          # Epoch-wise dynamic ratio masking for cross-source multimodal training
+│   └── train_multimodal_stroke_detector.py     # Full training loop with
 
 ---
 
