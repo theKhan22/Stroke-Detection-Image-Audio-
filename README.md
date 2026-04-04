@@ -83,43 +83,6 @@ Both datasets are publicly available on Kaggle:
 
 ---
 
-## Project Structure
-
-```
-├── data/
-│   ├── stroke_facial_images/              # Facial image dataset (download from Kaggle)
-│   └── torgo_dysarthria_audio/            # TORGO audio dataset (download from Kaggle)
-├── preprocessing/
-│   ├── extract_mediapipe_facial_landmarks.py   # MediaPipe Face Mesh extraction & nose-tip normalization
-│   └── extract_mfcc_from_speech.py             # Librosa MFCC extraction + mean pooling across frames
-├── feature_selection/
-│   ├── rank_facial_landmark_regions.py         # RF + XGBoost + CatBoost region importance aggregation
-│   └── rank_mfcc_coefficients.py               # CatBoost + LightGBM + ExtraTrees coefficient ranking
-├── models/
-│   └── dual_branch_cnn_mlp_fusion.py           # Dual CNN branches with MLP fusion for stroke classification
-├── training/
-│   ├── stochastic_modality_masking.py          # Epoch-wise dynamic ratio masking for cross-source multimodal training
-│   └── train_multimodal_stroke_detector.py     # Full training loop with
-
----
-
-## Robustness Summary
-
-| Corruption Type | Facial Accuracy | Audio Accuracy |
-|---|---|---|
-| Brightness & Contrast | 87.40% | — |
-| Gaussian Noise | 87.12% | — |
-| JPEG Compression | 87.00% | — |
-| Shadow Occlusion | 85.66% | — |
-| Motion Blur | 86.34% | — |
-| Reverberation | — | 95.33% |
-| Low-pass Filtering | — | 89.95% |
-| High-pass Filtering | — | 93.66% |
-| Babble Noise | — | 97.65% |
-| Additive White Noise | — | 96.24% |
-| **Both corrupted (multimodal)** | **94.97%** | **94.97%** |
-
----
 
 ## Citation
 
